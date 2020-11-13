@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
 
@@ -34,20 +35,26 @@ public class TileController : MonoBehaviour
     [Header("Generation Results")]
     public TileTypes[,] Tiles;
     public Tile[,] TileArray;
+    bool _firstTile = false;
+    public GameObject player;
+    public Transform spawnPoint;
+    public Camera mainCamera;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         Generate();
+        mainCamera.gameObject.SetActive(false);
+        Instantiate(player, spawnPoint.position, Quaternion.identity);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            Generate();
-        }
+        // if (Input.GetKeyDown(KeyCode.R))
+        // {
+        //     Generate();
+        // }
     }
 
     public void InitTiles()
@@ -68,6 +75,7 @@ public class TileController : MonoBehaviour
 
     public void Generate()
     {
+        _firstTile = false;
         Tiles = new TileTypes[width, height];
         TileArray = new Tile[width, height];
         InitTiles();
@@ -154,6 +162,11 @@ public class TileController : MonoBehaviour
                     default:
                         continue;
                 }
+                if (TileTypeToGenerate != TileTypes.AIR && !_firstTile)
+                {
+                    _firstTile = true;
+                    spawnPoint.position = new Vector3(x - (width * 0.5f), height - (height * 0.25f), 0);
+                }
 
                 TileArray[x, y] = tile;
                 tilemap.SetTile(new Vector3Int(x - (int)(width * 0.5f), y - (int)(height * 0.25f), 0), tile);
@@ -162,6 +175,7 @@ public class TileController : MonoBehaviour
                 //TileArray[x, y].transform.parent = transform;
             }
         }
+        player.transform.position = spawnPoint.position;
     }
 
     public void DestroyAllTiles()
